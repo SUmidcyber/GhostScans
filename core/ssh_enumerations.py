@@ -21,5 +21,5 @@ class SSHenumerations(AllScans):
         ])
     
     def sshv1(self):
-        subprocess.run(["nmap", "--script sshv1", self.target_ip])
+        subprocess.run(["nmap", "--script" ,"sshv1", self.target_ip])
     
