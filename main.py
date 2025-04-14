@@ -1,4 +1,5 @@
 import subprocess
+import json
 import time
 from core.all_ip import AllScans
 from core.protocol import ProtocolScans
@@ -54,11 +55,11 @@ def main():
             log_choice = input("Do you want to log the output? (y/n): ").strip().lower()
             
             if choice == '1':
-                run_scan_with_progress(scanner.all_port, log_choice, "all_ports.log")
+                run_scan_with_progress(scanner.all_port, log_choice, "all_ports.json")
             elif choice == '2':
                 handle_protocol_scans(scanner.target_ip, log_choice)
             elif choice == '3':
-                run_scan_with_progress(waf_detections, log_choice, "waf.log", scanner.target_ip)
+                run_scan_with_progress(waf_detections, log_choice, "waf.json", scanner.target_ip)
             elif choice == '4':
                 ssh_enumeration(scanner.target_ip, log_choice)
             elif choice == 'q':
@@ -76,23 +77,23 @@ def handle_protocol_scans(target, log_choice):
         choice = input("Protocol choice (1-9, b to back): ").strip().lower()
         
         if choice == '1':
-            run_scan_with_progress(protocol_scanner.tcp_scan, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.tcp_scan, log_choice, "packages.json")
         elif choice == '2':
-            run_scan_with_progress(protocol_scanner.udp_scan, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.udp_scan, log_choice, "packages.json")
         elif choice == '3':
-            run_scan_with_progress(protocol_scanner.icmp_scan, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.icmp_scan, log_choice, "packages.json")
         elif choice == '4':
-            run_scan_with_progress(protocol_scanner.arp_scan, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.arp_scan, log_choice, "packages.json")
         elif choice == '5':
-            run_scan_with_progress(protocol_scanner.ping_scan, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.ping_scan, log_choice, "packages.json")
         elif choice =='6':
-            run_scan_with_progress(protocol_scanner.os_detection, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.os_detection, log_choice, "packages.json")
         elif choice == '7':
-            run_scan_with_progress(protocol_scanner.stealth_scan, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.stealth_scan, log_choice, "packages.json")
         elif choice == '8':
-            run_scan_with_progress(protocol_scanner.fin_scanning, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.fin_scanning, log_choice, "packages.json")
         elif choice == '9':
-            run_scan_with_progress(protocol_scanner.xmas_scanning, log_choice, "packages.log")
+            run_scan_with_progress(protocol_scanner.xmas_scanning, log_choice, "packages.json")
         elif choice == 'b':
             break
         else:
@@ -110,13 +111,13 @@ def ssh_enumeration(target, log_choice):
         ssh_submenu()
         choice = input("SSH Enumeration choice (1-5, b to back): ").strip().lower()
         if choice == '1':
-            run_scan_with_progress(ssh_scans.ssh_brute, log_choice, "ssh_enumeration.log")
+            run_scan_with_progress(ssh_scans.ssh_brute, log_choice, "ssh_enumeration.json")
         elif choice == '2':
-            run_scan_with_progress(ssh_scans.ssh2_enum_algos, log_choice, "ssh_enumeration.log")
+            run_scan_with_progress(ssh_scans.ssh2_enum_algos, log_choice, "ssh_enumeration.json")
         elif choice == '3':
-            run_scan_with_progress(ssh_scans.ssh_run, log_choice, "ssh_enumeration.log")
+            run_scan_with_progress(ssh_scans.ssh_run, log_choice, "ssh_enumeration.json")
         elif choice == '4':
-            run_scan_with_progress(ssh_scans.sshv1, log_choice, "ssh_enumeration.log")
+            run_scan_with_progress(ssh_scans.sshv1, log_choice, "ssh_enumeration.json")
         elif choice == 'b':
             break
         else: 
@@ -129,11 +130,13 @@ def run_scan_with_progress(scan_method, log_choice, log_file, *args):
             with open(log_file, "w") as file:
                 process = subprocess.Popen(scan_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                 total_lines = 100  # Örnek olarak toplam satır sayısını belirleyin
+                log_data = []
                 for i, line in enumerate(process.stdout):
-                    file.write(line.decode())
+                    log_data.append({"line": line.decode().strip()})
                     progress = (i + 1) / total_lines * 100
                     print_progress_bar(progress)
                     time.sleep(0.1)  # İlerleme göstergesini güncellemek için kısa bir bekleme süresi
+                json.dump(log_data, file, indent=4)
         else:
             process = subprocess.Popen(scan_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             total_lines = 100  # Örnek olarak toplam satır sayısını belirleyin
