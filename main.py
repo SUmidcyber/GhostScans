@@ -35,7 +35,8 @@ def ssh_submenu():
     1) SSH Brute
     2) SSH2 Enum Algos
     3) SSH Run
-    4) SShV1
+    4) SSHV1
+    b) Back to Main Menu
     """)
 
 def main():
@@ -58,7 +59,7 @@ def main():
             elif choice == '3':
                 run_scan(waf_detections, log_choice, "waf.log", scanner.target_ip)
             elif choice == '4':
-                ssh_enumration(scanner.target_ip, log_choice)
+                ssh_enumeration(scanner.target_ip, log_choice)
             elif choice == 'q':
                 break
             else:
@@ -102,35 +103,33 @@ def waf_detections(target):
     waf_scanner.http_waf_fingerprint()
     waf_scanner.http_waf_detect_aggro()
 
-def ssh_enumration(target, log_choice):
+def ssh_enumeration(target, log_choice):
     ssh_scans = SSHenumerations(target)
     while True:
         ssh_submenu()
-        choise = input("SSH Enumeration choice (1-5, b to bach): ").strip().lower()
-        if choise == '1':
-            run_scan(ssh_scans.ssh_brute, log_choice, "ssh_enumration.log")
-        elif choise == '2':
-            run_scan(ssh_scans.ssh2_enum_algos, log_choice, "ssh_enumration.log")
-        elif choise == '3':
-            run_scan(ssh_scans.ssh_run, log_choice, "ssh_enumration.log")
-        elif choise == '4':
-            run_scan(ssh_scans.sshv1, log_choice, "ssh_enumration.log")
-        elif choise == 'q':
+        choice = input("SSH Enumeration choice (1-5, b to back): ").strip().lower()
+        if choice == '1':
+            run_scan(ssh_scans.ssh_brute, log_choice, "ssh_enumeration.log")
+        elif choice == '2':
+            run_scan(ssh_scans.ssh2_enum_algos, log_choice, "ssh_enumeration.log")
+        elif choice == '3':
+            run_scan(ssh_scans.ssh_run, log_choice, "ssh_enumeration.log")
+        elif choice == '4':
+            run_scan(ssh_scans.sshv1, log_choice, "ssh_enumeration.log")
+        elif choice == 'b':
             break
         else: 
             print("Invalid SSH Choice!")
 
-
-
-
-
-
 def run_scan(scan_method, log_choice, log_file, *args):
     if log_choice == 'y':
         with open(log_file, "w") as file:
-            subprocess.run(scan_method(*args), stdout=file, stderr=file)
+            result = subprocess.run(scan_method(*args), stdout=file, stderr=file)
     else:
-        subprocess.run(scan_method(*args))
+        result = subprocess.run(scan_method(*args))
+    
+    if result is None:
+        raise ValueError("Scan method returned None, which is not iterable.")
 
 if __name__ == "__main__":
     main()
