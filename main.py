@@ -5,6 +5,10 @@ from core.all_ip import AllScans
 from core.protocol import ProtocolScans
 from core.waf_detection import WafDetection
 from core.ssh_enumerations import SSHenumerations
+from core.mysql import MySQLenumerations
+from core.smb_enumerations import SMBenumerations
+
+
 
 def show_menu():
     print("""
@@ -40,6 +44,14 @@ def ssh_submenu():
     4) SSHV1
     b) Back to Main Menu
     """)
+def smb_submenu():
+    print("""
+    SMB Enumerations Options PORT Scan:
+    1) PORT 445
+    2) PORT 139
+    3) Scan Both Ports
+    4) Deep Scans (SMB)
+    """)
 
 def main():
     try:
@@ -62,6 +74,10 @@ def main():
                 run_scan_with_progress(waf_detections, log_choice, "waf.json", scanner.target_ip)
             elif choice == '4':
                 ssh_enumeration(scanner.target_ip, log_choice)
+            elif choice == '5':
+                run_scan_with_progress(mysql_detections, log_choice, "mysql.json", scanner.target_ip)
+            elif choice == '6':
+                smb_enumerations(scanner.target_ip, log_choice)
             elif choice == 'q':
                 break
             else:
@@ -122,6 +138,33 @@ def ssh_enumeration(target, log_choice):
             break
         else: 
             print("Invalid SSH Choice!")
+
+def mysql_detections(target):
+    # MYSQL Detections tarama + BrutForce 
+    mysql_scaner = MySQLenumerations(target)
+    mysql_scaner.mysql_enumrations()
+    mysql_scaner.mysql_related()
+    mysql_scaner.mysql_empty_password_nse()
+    mysql_scaner.mysql_brute_force()
+
+def smb_enumerations(target, log_choice):
+    smb_scans = SMBenumerations(target)
+    while True:
+        smb_submenu()
+        choice = input("Port Options (1-3 , b to back): ").strip().lower()
+        if choice == '1':
+            run_scan_with_progress(smb_scans.smb_p445, log_choice, "smb_port445.json")
+        elif choice == '2':
+            run_scan_with_progress(smb_scans.smb_p139, log_choice, "smb_port139.json")
+        elif choice == '3':
+            run_scan_with_progress(smb_scans.smb_two_ports, log_choice, "smb_two_scans_port.json")
+        elif choice == '4':
+            run_scan_with_progress(smb_scans.smb_deep_scan_ports, log_choice, "smb_deep_scans.json")
+        elif choice == 'b':
+            break
+        else:
+            print("Invalid Options SMB CHOICE!")
+
 
 def run_scan_with_progress(scan_method, log_choice, log_file, *args):
     try:
