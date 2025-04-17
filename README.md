@@ -48,3 +48,8 @@ A command-line utility designed to simplify network scanning and enumeration tas
     Scans Delay: Timed scan options and firewall evasion
 
     Parallelism: Parallel scanning and fast scan options
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/79cb3dea-9cc5-48cc-80f4-01f05a088ab7" width="500" alt="Ekran Görüntüsü">
+</div>
+    
