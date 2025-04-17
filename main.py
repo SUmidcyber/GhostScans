@@ -7,14 +7,16 @@ from core.waf_detection import WafDetection
 from core.ssh_enumerations import SSHenumerations
 from core.mysql import MySQLenumerations
 from core.smb_enumerations import SMBenumerations
-
-
+from core.http_enumerations import HTTPenumrations
+from core.dns_service import DNService
+from core.scan_delay import ScanDelay
+from core.parallelism import Parallelisms
 
 def show_menu():
     print("""
     1) All Scans            6) SMB Enumerations
     2) Protocol Scans       7) HTTP Enumerations
-    3) Waf Detection        8) DNS Scans
+    3) Waf Detection        8) DNS Service Scans
     4) SSH Enumeration      9) Scans Delay
     5) MySql                10) Parallelism
     q) Quit
@@ -51,7 +53,29 @@ def smb_submenu():
     2) PORT 139
     3) Scan Both Ports
     4) Deep Scans (SMB)
+    b) Back to Main Menu
     """)
+def scandelay_submenu():
+    print("""
+    Scan Delay Options Scans
+    1) TCP/SYN Scan
+    2) Hide Port Scan
+    3) Firewall  Port Detection Scan
+    4) Firewall/IPS bypass 
+    5) Speed Is Angry Scan
+    6) Service and Version
+    b) Back to Main Menu
+    """)
+def parallelism_submenu():
+    print("""
+    Parallelism Options Scans
+    1) Silent Scans
+    2) Speed Scans
+    3) Parallelism + Scans Delay
+    4) Version Scans
+    5) Parallelism + Max Rate
+    b) Back to Main Menu
+        """)
 
 def main():
     try:
@@ -78,6 +102,14 @@ def main():
                 run_scan_with_progress(mysql_detections, log_choice, "mysql.json", scanner.target_ip)
             elif choice == '6':
                 smb_enumerations(scanner.target_ip, log_choice)
+            elif choice == '7':
+                run_scan_with_progress(http_enum_scan, log_choice, "http_scan_enum.json", scanner.target_ip)
+            elif choice == '8':
+                run_scan_with_progress(dns_service_scans, log_choice, "dns_service.json", scanner.target_ip)
+            elif choice == '9':
+                scans_delay_bypass(scanner.target_ip, log_choice)
+            elif choice == '10':
+                parallelism_scans_max(scanner.target_ip, log_choice)
             elif choice == 'q':
                 break
             else:
@@ -164,7 +196,57 @@ def smb_enumerations(target, log_choice):
             break
         else:
             print("Invalid Options SMB CHOICE!")
+def http_enum_scan(target):
+    http_scan = HTTPenumrations(target)
+    http_scan.http_enums()
+    http_scan.http_methods()
 
+def dns_service_scans(target):
+    dns_scan = DNService(target)
+    dns_scan.dns_service()
+
+def scans_delay_bypass(target, log_choice):
+    scan_delay = ScanDelay(target)
+    while True:
+        scandelay_submenu()
+        choice = input("Scans Delay choice (1-6, b to back): ").strip().lower()
+        if choice == '1':
+            run_scan_with_progress(scan_delay.tcp_syn_scan, log_choice, "tcp_syn.json")
+        elif choice == '2':
+            run_scan_with_progress(scan_delay.hide_scans, log_choice, "hide_scans.json")
+        elif choice == '3':
+            run_scan_with_progress(scan_delay.firewall_port_scan, log_choice, "firewall_port.json")
+        elif choice == '4':
+            run_scan_with_progress(scan_delay.firewall_ips_bypass, log_choice, "firewall_ips_bypass.json")
+        elif choice == '5':
+            run_scan_with_progress(scan_delay.speed_is_angry_scans, log_choice, "speed_is_angry.json")
+        elif choice == '6':
+            run_scan_with_progress(scan_delay.service_and_versiyon, log_choice, "service_and_version.json")
+        elif choice == 'b':
+            break
+        else:
+            print("Invalid Scans Delay Choice!")
+
+def parallelism_scans_max(target, log_choice):
+    parallelism_chi = Parallelisms(target)
+    while True:
+        parallelism_submenu()
+        choice = input("Scans Parallelism (1-5, b to back)").strip().lower()
+        if choice == '1':
+            run_scan_with_progress(parallelism_chi.silent_scans, log_choice, "silent_scans.json")
+        elif choice == '2':
+            run_scan_with_progress(parallelism_chi.speed_scans, log_choice, "speed_scans.json")
+        elif choice == '3':
+            run_scan_with_progress(parallelism_chi.parallelism_and_scansdelay, log_choice, "parallelism_and_scansdelay.json")
+        elif choice == '4':
+            run_scan_with_progress(parallelism_chi.version_scans, log_choice, "version_scan.json")
+        elif choice == '5':
+            run_scan_with_progress(parallelism_chi.parallelism_and_maxrate, log_choice, "parallelism_and_maxrate.json")
+        elif choice == 'b':
+            break
+        else:
+            print("Invalid Scans Parallelism!")
+        
 
 def run_scan_with_progress(scan_method, log_choice, log_file, *args):
     try:
